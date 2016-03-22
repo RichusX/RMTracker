@@ -26,8 +26,12 @@ while True:
     q.form().submit()
 
     # extract the tracking status
-    x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
-    status = x.text()
+    try:
+        x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
+        status = x.text()
+    except AttributeError:
+        x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
+        status = x.text()
     prevStatus = ''
     
     if (status != prevStatus):
