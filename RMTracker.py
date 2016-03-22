@@ -11,6 +11,7 @@ trackingNumber = 'YOUR_TRACKING_NUMBER'
 apiKey = 'YOUR_API_KEY'
 p = PushBullet(apiKey)
 refreshRate = 30 # how often to check the status in minutes
+prevStatus = ''
 
 # set up a web scraping session
 sess = dryscrape.Session(base_url = 'https://www.royalmail.com')
@@ -32,7 +33,6 @@ while True:
     except AttributeError:
         x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
         status = x.text()
-    prevStatus = ''
     
     if (status != prevStatus):
         # push the status to PushBullet
