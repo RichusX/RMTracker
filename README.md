@@ -28,5 +28,8 @@ refreshRate = 30 # how often to check the status in minutes
 # USER VARIABLES END
 ```
 
+**To-Do**
+  - Add command line interface
+
 If you've done everything correctly just start the script (reccommended to run within a 'screen') and that's it!
 If you have any issues / questions feel free to contact me by e-mail: me@richusx.me
