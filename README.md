@@ -18,7 +18,7 @@ Get your PushBulelt Device ID:
   - Look at the URL, it will be "https://www.pushbullet.com/#devices/xxxxxxxxxxxxxxxxxxxxxx"
   - Instead of x's you're going to see your device ID
 
-Before using you need to edit the Python scripts user variables
+Before using the script you need to edit the Python scripts user variables
 ```python
 # USER VARIABLES START
 trackingNumber = 'YOUR_TRACKING_NUMBER' # your RoyalMail tracking number
@@ -30,6 +30,7 @@ refreshRate = 30 # how often to check the status in minutes
 
 **To-Do**
   - Add command line interface
+  - Add setup.py for automatic install
 
 If you've done everything correctly just start the script (reccommended to run within a 'screen') and that's it!
 If you have any issues / questions feel free to contact me by e-mail: me@richusx.me
