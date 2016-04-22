@@ -17,8 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import dryscrape
-import sys
-import getopt
+import sys, getopt
+import argparse
+import requests
 import time
 from pushbullet.pushbullet import PushBullet
 
@@ -26,65 +27,93 @@ if 'linux' in sys.platform:
     dryscrape.start_xvfb()
 
 # USER VARIABLES START
-trackingNumber = 'YOUR_TRACKING_NUMBER'
-apiKey = 'YOUR_API_KEY'
-deviceId = 'YOUR_PUSHBULLET_DEVICE_ID'
+
 refreshRate = 30 # how often to check the status in minutes
 # USER VARIABLES END
+
+def checkArgs(a,d,t):
+    if t.count != 13:
+        print "Invalid tracking number"
+        return False
+    elif a.count < 20:
+        print "Invalid API Key"
+        return False
+    elif d.count != 22:
+        print "Invalid Device ID"
+        return False
+    else:
+        return True
+        
+    
 
 def usage():
     print "Usage:\n-h, --help (displays this info)\n-a [YOUR_API_KEY], --apiKey [YOUR_API_KEY]\n-d [YOUR_PUSHBULLET_DEVICE_ID], --deviceID [YOUR_PUSHBULLET_DEVICE_ID]\n-t [YOUR_TRACKING_NUMBER], --trackingNumber [YOUR_TRACKING_NUMBER]\n\nNote: Arguments API Key, Device ID & tracking number are all required" 
 
-def main(argv):
-    try:
-        opts, args = getopt.getopt(argv, "ha:d:t:", ["help","apiKey","deviceID","trackingNumber"]) # h (help), a (api key), d (device ID), t (tracking number)
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
-    
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            sys.exit()
-        else:
-            usage()
-            sys.exit()
-        #elif opt in ("-a", "--apiKey"):
-            #nothin   
-      
-#    p = PushBullet(apiKey)
-#
-#    # set up a web scraping session
-#    sess = dryscrape.Session(base_url = 'https://www.royalmail.com')
-#
-#    # we don't need images
-#    sess.set_attribute('auto_load_images', False)
-#
-#    while True:
-#        # visit the tracking page and lookup the tracking number
-#        sess.visit('/track-your-item')
-#        q = sess.at_xpath('//*[@name="tracking_number"]')
-#        q.set(trackingNumber)
-#        q.form().submit()
-#
-#        # extract the tracking status
-#        try:
-#            x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
-#            status = x.text()
-#        except AttributeError:
-#            x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
-#            status = x.text()
-#        
-#        if (status != prevStatus):
-#            # push the status to PushBullet
-#            # if you would like to push to more than one device then just copy the line below and change the device ID
-#            p.pushNote(deviceId, 'RoyalMail Tracking', status)
-#            
-#            prevStatus = status
-#        
-#        # wait for 'refreshRate' minutes before checking again
-#        time.sleep(refreshRate * 60)
+def main(apiKey, deviceId, trackingNumber):
+    prevStatus = ""
+    p = PushBullet(apiKey)
+
+    # set up a web scraping session
+    sess = dryscrape.Session(base_url = 'https://www.royalmail.com')
+
+    # we don't need images
+    sess.set_attribute('auto_load_images', False)
+
+    while True:
+        # visit the tracking page and lookup the tracking number
+        sess.visit('/track-your-item')
+        q = sess.at_xpath('//*[@name="tracking_number"]')
+        q.set(trackingNumber)
+        q.form().submit()
+
+        # extract the tracking status
+        try:
+            x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
+            status = x.text()
+        except AttributeError:
+            x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
+            status = x.text()
+        
+        
+        if (status != prevStatus):
+            # push the status to PushBullet
+            # if you would like to push to more than one device then just copy the line below and change the device ID
+            if "Status: Please try again" in status:
+                print "\n" + status
+                print "Will countinue checking unless stopped (CTRL+C)"
+            
+            try:
+                p.pushNote(deviceId, 'RoyalMail Tracking', status)
+            except requests.exceptions.HTTPError:
+                print "Incorrect API Key or Device ID"
+                usage()
+                
+
+            prevStatus = status
+        
+        # wait for 'refreshRate' minutes before checking again
+        time.sleep(refreshRate * 60)
 
 if __name__ == "__main__":
-        usage()
-        #main(sys.argv[1:])
+        try:
+            parser = argparse.ArgumentParser(description='RoyalMail tracking with PushBullet integration.')
+            parser.add_argument('-a','--apikey', help='Your PushBullet API key',required=True)
+            parser.add_argument('-d','--deviceid', help='Your PushBullet device ID',required=True)
+            parser.add_argument('-t','--tracknum', help='RoyalMail Tracking number you wish to track',required=True)
+            args = parser.parse_args()
+        
+            a = args.apikey
+            d = args.deviceid
+            t = args.tracknum
+            
+            print ("API Key: %s" % args.apikey)
+            print ("Device ID: %s" % args.deviceid)
+            print ("Tracking Number: %s" % args.tracknum)
+            
+            #if checkArgs():
+            main(a, d, t)
+            #else:
+            #    usage()
+        except KeyboardInterrupt:
+            print "\nRMTracker stopped"
+            sys.exit(0)
