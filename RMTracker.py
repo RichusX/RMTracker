@@ -18,6 +18,7 @@
 
 import dryscrape
 import sys
+import getopt
 import time
 from pushbullet.pushbullet import PushBullet
 
@@ -31,36 +32,59 @@ deviceId = 'YOUR_PUSHBULLET_DEVICE_ID'
 refreshRate = 30 # how often to check the status in minutes
 # USER VARIABLES END
 
-p = PushBullet(apiKey)
-prevStatus = ''
+def usage():
+    print "Usage:\n-h, --help (displays this info)\n-a [YOUR_API_KEY], --apiKey [YOUR_API_KEY]\n-d [YOUR_PUSHBULLET_DEVICE_ID], --deviceID [YOUR_PUSHBULLET_DEVICE_ID]\n-t [YOUR_TRACKING_NUMBER], --trackingNumber [YOUR_TRACKING_NUMBER]\n\nNote: Arguments API Key, Device ID & tracking number are all required" 
 
-# set up a web scraping session
-sess = dryscrape.Session(base_url = 'https://www.royalmail.com')
-
-# we don't need images
-sess.set_attribute('auto_load_images', False)
-
-while True:
-    # visit the tracking page and lookup the tracking number
-    sess.visit('/track-your-item')
-    q = sess.at_xpath('//*[@name="tracking_number"]')
-    q.set(trackingNumber)
-    q.form().submit()
-
-    # extract the tracking status
+def main(argv):
     try:
-        x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
-        status = x.text()
-    except AttributeError:
-        x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
-        status = x.text()
+        opts, args = getopt.getopt(argv, "ha:d:t:", ["help","apiKey","deviceID","trackingNumber"]) # h (help), a (api key), d (device ID), t (tracking number)
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
     
-    if (status != prevStatus):
-        # push the status to PushBullet
-        # if you would like to push to more than one device then just copy the line below and change the device ID
-        p.pushNote(deviceId, 'RoyalMail Tracking', status)
-        
-        prevStatus = status
-    
-    # wait for 'refreshRate' minutes before checking again
-    time.sleep(refreshRate * 60)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()
+            sys.exit()
+        else:
+            usage()
+            sys.exit()
+        #elif opt in ("-a", "--apiKey"):
+            #nothin   
+      
+#    p = PushBullet(apiKey)
+#
+#    # set up a web scraping session
+#    sess = dryscrape.Session(base_url = 'https://www.royalmail.com')
+#
+#    # we don't need images
+#    sess.set_attribute('auto_load_images', False)
+#
+#    while True:
+#        # visit the tracking page and lookup the tracking number
+#        sess.visit('/track-your-item')
+#        q = sess.at_xpath('//*[@name="tracking_number"]')
+#        q.set(trackingNumber)
+#        q.form().submit()
+#
+#        # extract the tracking status
+#        try:
+#            x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
+#            status = x.text()
+#        except AttributeError:
+#            x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
+#            status = x.text()
+#        
+#        if (status != prevStatus):
+#            # push the status to PushBullet
+#            # if you would like to push to more than one device then just copy the line below and change the device ID
+#            p.pushNote(deviceId, 'RoyalMail Tracking', status)
+#            
+#            prevStatus = status
+#        
+#        # wait for 'refreshRate' minutes before checking again
+#        time.sleep(refreshRate * 60)
+
+if __name__ == "__main__":
+        usage()
+        #main(sys.argv[1:])
