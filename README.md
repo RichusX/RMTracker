@@ -2,7 +2,7 @@
 RoyalMail tracking with PushBullet integration
 
 You will need...
-- Python (2 or 3 should be fine)
+- Python (2.7 or higher should be fine)
 
 **Dependencies**
 - [pyPushBullet](https://github.com/Azelphur/pyPushBullet/)

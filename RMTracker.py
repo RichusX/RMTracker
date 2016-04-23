@@ -2,17 +2,17 @@
 
 # RM Tracker - RoyalMail tracking with PushBullet integration
 # Copyright (C) 2016  Ritvars Timermanis (RichusX)
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -26,10 +26,7 @@ from pushbullet.pushbullet import PushBullet
 if 'linux' in sys.platform:
     dryscrape.start_xvfb()
 
-# USER VARIABLES START
-
 refreshRate = 30 # how often to check the status in minutes
-# USER VARIABLES END
 
 def checkArgs(a,d,t):
     if t.count != 13:
@@ -43,11 +40,13 @@ def checkArgs(a,d,t):
         return False
     else:
         return True
-        
-    
+
+
 
 def usage():
-    print "Usage:\n-h, --help (displays this info)\n-a [YOUR_API_KEY], --apiKey [YOUR_API_KEY]\n-d [YOUR_PUSHBULLET_DEVICE_ID], --deviceID [YOUR_PUSHBULLET_DEVICE_ID]\n-t [YOUR_TRACKING_NUMBER], --trackingNumber [YOUR_TRACKING_NUMBER]\n\nNote: Arguments API Key, Device ID & tracking number are all required" 
+    #print "Usage:\n-h, --help (displays this info)\n-a [YOUR_API_KEY], --apiKey [YOUR_API_KEY]\n-d [YOUR_PUSHBULLET_DEVICE_ID], --deviceID [YOUR_PUSHBULLET_DEVICE_ID]\n-t [YOUR_TRACKING_NUMBER], --trackingNumber [YOUR_TRACKING_NUMBER]\n\nNote: Arguments API Key, Device ID & tracking number are all required"
+    parser.print_help()
+    sys.exit(0)
 
 def main(apiKey, deviceId, trackingNumber):
     prevStatus = ""
@@ -71,26 +70,32 @@ def main(apiKey, deviceId, trackingNumber):
             x = sess.at_xpath('//*[@class="status result-row padding20lr first"]')
             status = x.text()
         except AttributeError:
-            x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
-            status = x.text()
-        
-        
+            try:
+                x = sess.at_xpath('//*[@class="status result-row padding20lr first last"]')
+                status = x.text()
+            except AttributeError:
+                print "Error"
+                sys.exit(0)
+
+
         if (status != prevStatus):
             # push the status to PushBullet
-            # if you would like to push to more than one device then just copy the line below and change the device ID
+
+            # if tracking not available then print out message
             if "Status: Please try again" in status:
                 print "\n" + status
                 print "Will countinue checking unless stopped (CTRL+C)"
-            
+
             try:
-                p.pushNote(deviceId, 'RoyalMail Tracking', status)
+                #p.pushNote(deviceId, 'RoyalMail Tracking', status)
+                print ("Notification 'pushed': %s" % status)
             except requests.exceptions.HTTPError:
                 print "Incorrect API Key or Device ID"
                 usage()
-                
+
 
             prevStatus = status
-        
+
         # wait for 'refreshRate' minutes before checking again
         time.sleep(refreshRate * 60)
 
@@ -101,19 +106,19 @@ if __name__ == "__main__":
             parser.add_argument('-d','--deviceid', help='Your PushBullet device ID',required=True)
             parser.add_argument('-t','--tracknum', help='RoyalMail Tracking number you wish to track',required=True)
             args = parser.parse_args()
-        
+
             a = args.apikey
             d = args.deviceid
             t = args.tracknum
-            
+
             print ("API Key: %s" % args.apikey)
             print ("Device ID: %s" % args.deviceid)
             print ("Tracking Number: %s" % args.tracknum)
-            
+
             #if checkArgs():
             main(a, d, t)
             #else:
             #    usage()
         except KeyboardInterrupt:
-            print "\nRMTracker stopped"
+            print " RMTracker stopped"
             sys.exit(0)
