@@ -28,20 +28,18 @@ if 'linux' in sys.platform:
 
 refreshRate = 30 # how often to check the status in minutes
 
-def checkArgs(a,d,t):
-    if t.count != 13:
+def checkArgs(apiK, devID, trackN):
+    if len(trackN) < 7 and len(trackN) > 22:
         print "Invalid tracking number"
         return False
-    elif a.count < 20:
+    elif len(apiK) < 20:
         print "Invalid API Key"
         return False
-    elif d.count != 22:
+    elif len(devID) != 22:
         print "Invalid Device ID"
         return False
     else:
         return True
-
-
 
 def usage():
     #print "Usage:\n-h, --help (displays this info)\n-a [YOUR_API_KEY], --apiKey [YOUR_API_KEY]\n-d [YOUR_PUSHBULLET_DEVICE_ID], --deviceID [YOUR_PUSHBULLET_DEVICE_ID]\n-t [YOUR_TRACKING_NUMBER], --trackingNumber [YOUR_TRACKING_NUMBER]\n\nNote: Arguments API Key, Device ID & tracking number are all required"
@@ -111,14 +109,15 @@ if __name__ == "__main__":
             d = args.deviceid
             t = args.tracknum
 
-            print ("API Key: %s" % args.apikey)
-            print ("Device ID: %s" % args.deviceid)
-            print ("Tracking Number: %s" % args.tracknum)
+            print ("API Key: %s" % len(args.apikey))
+            print ("Device ID: %s" % len(args.deviceid))
+            print ("Tracking Number: %s" % len(args.tracknum))
 
-            #if checkArgs():
-            main(a, d, t)
-            #else:
-            #    usage()
+            if checkArgs(a,d,t):
+                main(a, d, t)
+            else:
+                print "checkArgs() check FAILED\n"
+                usage()
         except KeyboardInterrupt:
             print " RMTracker stopped"
             sys.exit(0)
